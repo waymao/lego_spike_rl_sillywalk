@@ -10,7 +10,7 @@ hub = PrimeHub()
 left_motor = Motor('A')
 right_motor = Motor('B')
 tail_motor = Motor('D')
-#button = ForceSensor('E')
+button = ForceSensor('E')
 
 hub.light_matrix.show_image('ASLEEP')
 
@@ -50,40 +50,17 @@ def epi_greedy(s):
         return Q[s].index(max(Q[s]))
 
 # begin receive signal
-vcp = ct_hub.USB_VCP(0)
 def receive_human_feedback():
-    if not vcp.isconnected():
-        return 0
-    
-    vcp.write(("\nready to accept human feedback\n").encode())
-    ct_hub.display.show(ct_hub.Image.PACMAN)
+    ct_hub.display.show(ct_hub.Image.ASLEEP)
     reward = 0
-    for i in range(50): # 5cgcc seconds wait
-        if vcp.any():
-            while vcp.any():
-                line = vcp.readline()
-                if line is not None:
-                    line_decoded = line.decode("ascii")
-                    reward = word_to_reward(line_decoded)
-                    vcp.write(("\nyou sent \"" + 
-                        line_decoded + 
-                        "\" which have reward " + 
-                        str(reward) +
-                        "\n").encode())
-                else:
-                    vcp.write(("\nyou sent None\n").encode())
+    for i in range(12): # 5cgcc seconds wait
+        if button.is_pressed():
+            ct_hub.display.show(ct_hub.Image.ARROW_N)
+            return -1
         utime.sleep(0.1)
-    ct_hub.display.show(ct_hub.Image.ARROW_E)
-    vcp.write(("\nresuming operation...\n").encode())
+    ct_hub.display.show(ct_hub.Image.ARROW_N)
     return reward
 
-def word_to_reward(word):
-    if word == "bad":
-        return -1
-    elif word == "good":
-        return 1
-    else:
-        return 0
 
 def do_action(a):
     l, r, t = a
@@ -134,5 +111,5 @@ def Q_learning():
                 Q[s][a] += ALPHA * q_error(s, a, human_feedback * HUMAN_COEFF, new_s)
             step += 1
 
-ct_hub.display.show(ct_hub.Image.ARROW_E)
+ct_hub.display.show(ct_hub.Image.ARROW_N)
 Q_learning()
