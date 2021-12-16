@@ -1,14 +1,14 @@
+# LEGO type:standard slot:5
+
 from spike.control import wait_for_seconds, wait_until, Timer
 from math import *
+from spike import PrimeHub
 import hub, utime
+
 
 curr_hub = PrimeHub()
 
-left_motor = Motor('A')
-right_motor = Motor('B')
-tail_motor = Motor('D')
-
-vcp = hub.USB_VCP(0)
+vcp = hub.BT_VCP(0)
 
 while True:
     if vcp.isconnected():

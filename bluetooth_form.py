@@ -6,7 +6,7 @@ import tkinter
 from timeout import timeout
 import errno
 
-s = serial.Serial("/dev/tty.usbmodem3285358433381", 9600, timeout=1)
+s = serial.Serial("/dev/tty.LEGOHubMartinsHub", 115200, timeout=1)
 s.timeout = 1
 
 

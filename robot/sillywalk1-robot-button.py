@@ -53,7 +53,7 @@ def epi_greedy(s):
 def receive_human_feedback():
     ct_hub.display.show(ct_hub.Image.ASLEEP)
     reward = 0
-    for i in range(12): # 5cgcc seconds wait
+    for i in range(12): # wait for button press
         if button.is_pressed():
             ct_hub.display.show(ct_hub.Image.ARROW_N)
             return -1
