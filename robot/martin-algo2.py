@@ -11,6 +11,7 @@ hub = PrimeHub()
 left_motor_prime = Motor('A')
 right_motor_prime = Motor('B')
 tail_motor_prime = Motor('D')
+button = ForceSensor('E')
 
 left_motor = port.A.motor
 right_motor = port.B.motor
@@ -96,6 +97,13 @@ def do_action(a):
     left_motor.run_at_speed(-LR_SPEED*l)
     right_motor.run_at_speed(LR_SPEED*r)
     tail_motor.run_at_speed(TAIL_SPEED*t)
+
+# begin receive signal
+def receive_human_feedback():
+    if button.is_pressed():
+        return -1
+    else:
+        return 0
 
 
 def motors_reset(back):
