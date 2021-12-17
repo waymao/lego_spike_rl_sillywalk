@@ -1,13 +1,11 @@
-# LEGO type:standard slot:5
+# LEGO type:standard slot:4
 
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
 from random import random, choice, randint
 from time import sleep, localtime
 from hub import port, BT_VCP
-from math import *
-
-import ujson
+import math
 
 
 hub = PrimeHub()
@@ -41,6 +39,7 @@ T_DOM = [-1, 1]
 
 # storing history data
 history_memory = list(range(0, EPISODE_LEN))
+SINGLE_PRINT_STEP=30
 # storing bluetooth data
 vcp = BT_VCP(0)
 
@@ -97,15 +96,26 @@ def get_state(theta):
         return 0
     
 def get_reward(theta):
-    return -exp(abs(theta/180.0))+1
+    return -math.exp(abs(theta/180.0))+1
+
 
 def update_reward_history(timestep, state, action, new_state, reward):
-    history_memory[timestep] = (state, action, reward)
+    history_memory[timestep] = (state, action, new_state, reward)
+
 
 def send_reward_history():
-    encoded_hist = ujson.dumps({"history": history_memory})
-    vcp.write(encoded_hist)
-    vcp.write('/n/n/n')
+    num_trials = math.ceil(EPISODE_LEN / SINGLE_PRINT_STEP)
+    for i in range(0, num_trials):
+        step_min = i * SINGLE_PRINT_STEP
+        step_max = max(step_min + SINGLE_PRINT_STEP, EPISODE_LEN)
+        vcp.write(ujson.dumps({
+            "begin": step_min, 
+            "end": step_max, 
+            "history": history_memory[step_min:step_max]
+        }))
+        sleep(0.05)
+    vcp.write('\n\n\n')
+    
 
 def q_error(s, a, r, new_s):
     return r + GAMMA*max(Q[S.index(new_s)]) - Q[s][a]
