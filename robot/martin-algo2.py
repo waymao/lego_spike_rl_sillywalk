@@ -215,6 +215,42 @@ def sarsa_lambda():
             a = new_a
             step += 1
 
+def get_reward_hf(yaw):
+    hf = -1 if button.is_pressed() else 0
+    return -exp(abs(yaw/180.0))+hf+1
+
+def sarsa_lambda_hf():
+    while True:
+        motors_reset(True)
+        hub.left_button.wait_until_pressed()
+        hub.motion_sensor.reset_yaw_angle()
+        step = 0
+
+        yaw = hub.motion_sensor.get_yaw_angle()
+        tail = tail_motor_prime.get_position()
+        s = get_state(yaw, tail)
+        a = epi_greedy(s)
+
+        while step < EPISODE_LEN:
+            do_action(A[a])
+            wait_for_seconds(INTERVAL)
+            new_yaw = hub.motion_sensor.get_yaw_angle()
+            new_tail = tail_motor_prime.get_position()
+            new_s = get_state(new_yaw, new_tail)
+            new_a = epi_greedy(new_s)
+            r = get_reward_hf(new_yaw)
+            emote(r)
+            delta = et_q_error(s, a, new_s, new_a, r)
+            E[s][a] += 1
+            for each_s in S_i:
+                for each_a in A_i:
+                    Q[each_s][each_a] += ALPHA * delta * E[each_s][each_a]
+                    E[each_s][each_a] = GAMMA * LAMBDA * E[each_s][each_a]
+            s = new_s
+            a = new_a
+            step += 1
+
 
 # Q_learning()
-sarsa_lambda()
+# sarsa_lambda()
+sarsa_lambda_hf()
