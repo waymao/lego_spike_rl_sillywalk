@@ -52,7 +52,7 @@ reset_reward_history()
 
 def update_reward_history(timestep, state, action, new_state, reward, yaw):
     global sum_yaw, sum_reward, history_memory
-    history_memory[timestep] = (state, action, new_state, reward, yaw)
+    history_memory[timestep] = (reward, yaw)
     sum_yaw += yaw * yaw
     sum_reward += reward
 
@@ -61,8 +61,8 @@ def send_reward_history(episode=0):
     print({
         "history": history_memory,
         "episode": episode,
-        "yaw_mse": sum_yaw / EPISODE_LEN,
-        "rew_sum": sum_reward
+        # "yaw_mse": sum_yaw / EPISODE_LEN,
+        # "rew_sum": sum_reward
     })
 ############## END history ################
 
