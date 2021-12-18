@@ -11,7 +11,7 @@ hub = PrimeHub()
 left_motor_prime = Motor('A')
 right_motor_prime = Motor('B')
 tail_motor_prime = Motor('D')
-button = ForceSensor('E')
+distance = DistanceSensor('C')
 
 left_motor = port.A.motor
 right_motor = port.B.motor
@@ -22,7 +22,7 @@ hub.light_matrix.show_image('HAPPY')
 
 EPSILON = 0.1
 GAMMA = 0.9
-LAMBDA = 0.2
+LAMBDA = 0.1
 ALPHA = 0.1
 
 INTERVAL = 0.5
@@ -218,10 +218,6 @@ def sarsa_lambda():
             step += 1
         send_reward_history()
 
-def get_reward_hf(yaw):
-    hf = -1 if button.is_pressed() else 0
-    return -exp(abs(yaw/180.0))+hf+1
-
 def sarsa_lambda_hf():
     while True:
         motors_reset(True)
@@ -242,9 +238,19 @@ def sarsa_lambda_hf():
             new_tail = tail_motor_prime.get_position()
             new_s = get_state(new_yaw, new_tail)
             new_a = epi_greedy(new_s)
+<<<<<<< HEAD
             r = get_reward_hf(new_yaw)
             update_reward_history(step, s, new_a, new_s, r, new_yaw)
             emote(r)
+=======
+            r = get_reward(new_yaw)
+            dist = distance.get_distance_cm()
+            if dist and dist < 50:
+                r += -1
+                hub.light_matrix.show_image('NO')
+            else:
+                emote(r)
+>>>>>>> 85559214721854d5d7bb2eb88826c51973e7f5ff
             delta = et_q_error(s, a, new_s, new_a, r)
             E[s][a] += 1
             for each_s in S_i:
