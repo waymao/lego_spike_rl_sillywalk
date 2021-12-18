@@ -1,4 +1,4 @@
-# LEGO type:standard slot:5
+# LEGO type:standard slot:2
 
 from spike import PrimeHub, LightMatrix, Button, StatusLight, ForceSensor, MotionSensor, Speaker, ColorSensor, App, DistanceSensor, Motor, MotorPair
 from spike.control import wait_for_seconds, wait_until, Timer
@@ -22,7 +22,7 @@ hub.light_matrix.show_image('HAPPY')
 
 EPSILON = 0.1
 GAMMA = 0.9
-LAMBDA = 0.1
+LAMBDA = 0.15
 ALPHA = 0.1
 
 INTERVAL = 0.5
@@ -38,8 +38,7 @@ T_DOM = [-1, 1]
 YAW_DOM = list(range(-2, 3))
 
 ############## history ################
-
-
+print()
 def reset_reward_history():
     global sum_yaw, sum_reward, history_memory
     sum_yaw = 0
@@ -58,12 +57,13 @@ def update_reward_history(timestep, state, action, new_state, reward, yaw):
 
 
 def send_reward_history(episode=0):
-    print({
-        "history": history_memory,
-        "episode": episode,
-        # "yaw_mse": sum_yaw / EPISODE_LEN,
-        # "rew_sum": sum_reward
-    })
+    print("episodes.append(", history_memory, ")")
+    # print({
+    #     "history": history_memory,
+    #     "episode": episode,
+    #     "yaw_mse": sum_yaw / EPISODE_LEN,
+    #     "rew_sum": sum_reward
+    # })
 ############## END history ################
 
 
@@ -185,6 +185,7 @@ def et_q_error(s, a, new_s, new_a, r):
 
 
 def sarsa_lambda():
+    episode = 0
     while True:
         motors_reset(True)
         hub.left_button.wait_until_pressed()
@@ -216,9 +217,13 @@ def sarsa_lambda():
             s = new_s
             a = new_a
             step += 1
-        send_reward_history()
+        send_reward_history(episode)
+        episode += 1
+
+HUMAN_REWARD = -0.1
 
 def sarsa_lambda_hf():
+    episode = 0
     while True:
         motors_reset(True)
         hub.left_button.wait_until_pressed()
@@ -240,12 +245,12 @@ def sarsa_lambda_hf():
             new_a = epi_greedy(new_s)
             r = get_reward(new_yaw)
             dist = distance.get_distance_cm()
+            update_reward_history(step, s, new_a, new_s, r, new_yaw)
             if dist and dist < 50:
-                r += -1
+                r += HUMAN_REWARD
                 hub.light_matrix.show_image('NO')
             else:
                 emote(r)
-            update_reward_history(step, s, new_a, new_s, r, new_yaw)
             delta = et_q_error(s, a, new_s, new_a, r)
             E[s][a] += 1
             for each_s in S_i:
@@ -255,7 +260,51 @@ def sarsa_lambda_hf():
             s = new_s
             a = new_a
             step += 1
-        send_reward_history()
+        send_reward_history(episode)
+        episode += 1
+
+
+# def qlearning_yaw_sarsa_lambda_hf():
+#     episode = 0
+#     while True:
+#         motors_reset(True)
+#         hub.left_button.wait_until_pressed()
+#         hub.motion_sensor.reset_yaw_angle()
+#         step = 0
+
+#         yaw = hub.motion_sensor.get_yaw_angle()
+#         tail = tail_motor_prime.get_position()
+#         s = get_state(yaw, tail)
+#         a = epi_greedy(s)
+#         reset_reward_history()
+
+#         while step < EPISODE_LEN:
+#             do_action(A[a])
+#             wait_for_seconds(INTERVAL)
+#             new_yaw = hub.motion_sensor.get_yaw_angle()
+#             new_tail = tail_motor_prime.get_position()
+#             new_s = get_state(new_yaw, new_tail)
+#             new_a = epi_greedy(new_s)
+#             r = get_reward(new_yaw)
+#             dist = distance.get_distance_cm()
+#             update_reward_history(step, s, new_a, new_s, r, new_yaw)
+#             human_err = False
+#             if dist and dist < 50:
+#                 r += HUMAN_REWARD
+#                 hub.light_matrix.show_image('NO')
+#             else:
+#                 emote(r)
+#             delta = et_q_error(s, a, new_s, new_a, r)
+#             E[s][a] += 1
+#             for each_s in S_i:
+#                 for each_a in A_i:
+#                     Q[each_s][each_a] += ALPHA * delta * E[each_s][each_a]
+#                     E[each_s][each_a] = GAMMA * LAMBDA * E[each_s][each_a]
+#             s = new_s
+#             a = new_a
+#             step += 1
+#         send_reward_history(episode)
+#         episode += 1
 
 
 # Q_learning()
