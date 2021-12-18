@@ -238,11 +238,6 @@ def sarsa_lambda_hf():
             new_tail = tail_motor_prime.get_position()
             new_s = get_state(new_yaw, new_tail)
             new_a = epi_greedy(new_s)
-<<<<<<< HEAD
-            r = get_reward_hf(new_yaw)
-            update_reward_history(step, s, new_a, new_s, r, new_yaw)
-            emote(r)
-=======
             r = get_reward(new_yaw)
             dist = distance.get_distance_cm()
             if dist and dist < 50:
@@ -250,7 +245,7 @@ def sarsa_lambda_hf():
                 hub.light_matrix.show_image('NO')
             else:
                 emote(r)
->>>>>>> 85559214721854d5d7bb2eb88826c51973e7f5ff
+            update_reward_history(step, s, new_a, new_s, r, new_yaw)
             delta = et_q_error(s, a, new_s, new_a, r)
             E[s][a] += 1
             for each_s in S_i:
