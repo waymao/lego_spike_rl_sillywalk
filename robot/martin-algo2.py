@@ -61,8 +61,8 @@ def send_reward_history(episode=0):
     print({
         "history": history_memory,
         "episode": episode,
-        "yaw_avg": sqrt(sum_yaw) / EPISODE_LEN,
-        "rew_avg": sum_reward / EPISODE_LEN
+        "yaw_mse": sum_yaw / EPISODE_LEN,
+        "rew_sum": sum_reward
     })
 ############## END history ################
 
@@ -195,6 +195,7 @@ def sarsa_lambda():
         tail = tail_motor_prime.get_position()
         s = get_state(yaw, tail)
         a = epi_greedy(s)
+        reset_reward_history()
 
         while step < EPISODE_LEN:
             do_action(A[a])
@@ -204,6 +205,7 @@ def sarsa_lambda():
             new_s = get_state(new_yaw, new_tail)
             new_a = epi_greedy(new_s)
             r = get_reward(new_yaw)
+            update_reward_history(step, s, new_a, new_s, r, new_yaw)
             emote(r)
             delta = et_q_error(s, a, new_s, new_a, r)
             E[s][a] += 1
@@ -214,6 +216,7 @@ def sarsa_lambda():
             s = new_s
             a = new_a
             step += 1
+        send_reward_history()
 
 def get_reward_hf(yaw):
     hf = -1 if button.is_pressed() else 0
@@ -230,6 +233,7 @@ def sarsa_lambda_hf():
         tail = tail_motor_prime.get_position()
         s = get_state(yaw, tail)
         a = epi_greedy(s)
+        reset_reward_history()
 
         while step < EPISODE_LEN:
             do_action(A[a])
@@ -239,6 +243,7 @@ def sarsa_lambda_hf():
             new_s = get_state(new_yaw, new_tail)
             new_a = epi_greedy(new_s)
             r = get_reward_hf(new_yaw)
+            update_reward_history(step, s, new_a, new_s, r, new_yaw)
             emote(r)
             delta = et_q_error(s, a, new_s, new_a, r)
             E[s][a] += 1
@@ -249,6 +254,7 @@ def sarsa_lambda_hf():
             s = new_s
             a = new_a
             step += 1
+        send_reward_history()
 
 
 # Q_learning()
